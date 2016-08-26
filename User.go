@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"io/ioutil"
 	"os"
 )
 
@@ -31,4 +32,14 @@ func SaveUser(userInfo *User) string {
 		}
 	}
 	return userid
+}
+
+//GetUserToJSONStr method for get the user information from the disk
+func GetUserToJSONStr(userID string) string {
+	userInfo := ""
+	jsonStr, err := ioutil.ReadFile("/tmp/" + userID)
+	if err == nil {
+		userInfo = string(jsonStr)
+	}
+	return userInfo
 }

@@ -36,16 +36,16 @@ var routes = Routes{
 		Index,
 	},
 	Route{
+		"UserInfo",
+		"GET",
+		"/user/{userid:[A-Za-z=0-9]+}",
+		UserInfo,
+	},
+	Route{
 		"UserAdd",
 		"POST",
 		"/user/add",
 		UserAdd,
-	},
-	Route{
-		"UserInfo",
-		"GET",
-		"/user/{userid}",
-		UserInfo,
 	},
 	Route{
 		"GoToken",
