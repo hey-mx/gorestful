@@ -46,7 +46,7 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Fprint(w, "Unahutorized")
+		fmt.Fprint(w, "Unauthorized")
 	}
 }
 
