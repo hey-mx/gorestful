@@ -12,6 +12,8 @@ import (
 	"github.com/robbert229/jwt"
 )
 
+const mysecret = "MySecretKey"
+
 //Index Handler for root
 func Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
@@ -30,13 +32,13 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		if err := json.Unmarshal(body, &user); err != nil {
-			users := Users{
-				user,
-			}
-			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-			w.WriteHeader(http.StatusCreated)
-			if err := json.NewEncoder(w).Encode(users); err != nil {
-				println(err)
+			userid := SaveUser(&user)
+			if userid != "" {
+				w.WriteHeader(http.StatusCreated)
+				fmt.Fprintf(w, "User Id: %q", userid)
+			} else {
+				w.WriteHeader(http.StatusExpectationFailed)
+				fmt.Fprint(w, "Error")
 			}
 		}
 	} else {
@@ -46,10 +48,18 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 
 //UserInfo Handle for get the user information
 func UserInfo(w http.ResponseWriter, r *http.Request) {
-	/*vars := mux.Vars(r)
-	userID, _ := strconv.Atoi(vars["userid"])
-	userInfo := Users[userID]*/
 	fmt.Fprint(w, "You are trying to get the user information")
+}
+
+//GoToken Handle for create and print a new token
+func GoToken(w http.ResponseWriter, r *http.Request) {
+	algorithm := jwt.HmacSha256(mysecret)
+	claims := jwt.NewClaim()
+	claims["isAdmin"] = true
+	token, err := jwt.Encode(algorithm, claims)
+	if err == nil {
+		fmt.Fprint(w, token)
+	}
 }
 
 func validateJwt(r *http.Request) bool {
@@ -57,7 +67,7 @@ func validateJwt(r *http.Request) bool {
 	token := r.Header.Get("Authorization")
 	if token != "" {
 		token = strings.Replace(token, "Bearer ", "", -1)
-		algorithm := jwt.HmacSha256("MySecretKey")
+		algorithm := jwt.HmacSha256(mysecret)
 		if jwt.IsValid(algorithm, token) == nil {
 			claims, err := jwt.Decode(algorithm, token)
 			if err != nil {

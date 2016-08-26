@@ -47,4 +47,10 @@ var routes = Routes{
 		"/user/{userid}",
 		UserInfo,
 	},
+	Route{
+		"GoToken",
+		"GET",
+		"/token",
+		GoToken,
+	},
 }
