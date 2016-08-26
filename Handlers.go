@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/robbert229/jwt"
 )
 
@@ -26,12 +27,12 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 		var user User
 		body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
 		}
 		if err := r.Body.Close(); err != nil {
-			panic(err)
+			fmt.Println(err)
 		}
-		if err := json.Unmarshal(body, &user); err != nil {
+		if err := json.Unmarshal(body, &user); err == nil {
 			userid := SaveUser(&user)
 			if userid != "" {
 				w.WriteHeader(http.StatusCreated)
@@ -40,15 +41,29 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusExpectationFailed)
 				fmt.Fprint(w, "Error")
 			}
+		} else {
+			fmt.Println(err)
 		}
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, "Unahutorized")
 	}
 }
 
 //UserInfo Handle for get the user information
 func UserInfo(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "You are trying to get the user information")
+	vars := mux.Vars(r)
+	if validateJwt(r) {
+		userInfo := GetUserToJSONStr(vars["userid"])
+		if userInfo == "" {
+			userInfo = "{\"error\": \"user not found\"}"
+		}
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, userInfo)
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, "Unahutorized")
+	}
 }
 
 //GoToken Handle for create and print a new token
